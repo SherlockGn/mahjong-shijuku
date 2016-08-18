@@ -771,3 +771,56 @@ function dropTenpai(pais, kans) {
     }
     return res;
 }
+
+/* basic sort function */
+function basicSort(a, b) {return a - b;}
+
+/* generate sequence array 0~n */
+function seqArray(n) {
+    var ret = [];
+    for(var i = 0; i < n; i++)
+        ret.push(i);
+    return ret;
+}
+
+/* search 4 same pais (unsorted), indexes returned */
+function search4(pais) {
+    var ret = [];
+    for(var i = 0; i < pais.length; i++) {
+        var next = [];
+        for(var j = i + 1; j < pais.length; j++) {
+            if(pais[i] === pais[j]) next.push(j);
+        }
+        if(next.length === 3) {
+            ret = ret.concat(next);
+            ret.push(i);
+        }
+    }
+    ret.sort(basicSort);
+    return ret;
+}
+
+/* judge if agari */
+function canAgari(pais, kans) {
+    var ret = handle(pais.slice(0), kans, pais[pais.length - 1]);
+    if(typeof(ret) === "string") return false;
+    return ret.length !== 0;
+}
+
+/* judge if player can do kan operation */
+function canKan(pais, kans, get) {
+    var ten1 = tenpai(pais, kans);
+    var tp = pais.slice(0);
+    if(tp.indexOf(get) === -1) return false;
+    tp.splice(tp.indexOf(get), 1);
+    if(tp.indexOf(get) === -1) return false;
+    tp.splice(tp.indexOf(get), 1);
+    if(tp.indexOf(get) === -1) return false;
+    tp.splice(tp.indexOf(get), 1);
+    kans.push(get);
+    var ten2 = tenpai(tp, kans);
+    return ten1.toString() === ten2.toString();
+}
+
+/* global variables */
+var paiType = [1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29,31,33,35,37,41,43,45];
