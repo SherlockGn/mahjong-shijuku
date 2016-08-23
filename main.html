@@ -1,0 +1,199 @@
+<html>
+<head>
+    <script src="jquery.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <link href="bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<button class="btn btn-primary" data-toggle="modal" data-target="#myModal"> start </button>
+<button class="btn btn-primary" onclick="console.log(cheatData);"> show </button>
+
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="myModalLabel">
+					please decide the mahjong pile
+				</h4>
+			</div>
+			<div class="modal-body" id="subframeBodyId" style="padding-top: 270"></div>
+			<div class="modal-footer">
+				<button id="subBtnOkId" type="button" class="btn btn-default" data-dismiss="modal">ok</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal-fade -->
+
+
+</body>
+
+<script>
+
+function subCalPosition(arg1/* 0: ordinary, 1: head, 2: last */, num, hs) {
+    if(arg1 === 0) {
+        var sleft = 100, stop = 20;
+        return {x: (sleft + 40 * num), y: (stop + 40 * hs)};
+    } else if(arg1 === 1) {
+        var sleft = 20, stop = 210;
+        return {x: (sleft + 30 * num), y: (stop)};
+    } else if(arg1 === 2) {
+        var sleft = 20, stop = 260;
+        return {x: (sleft + 30 * num), y: (stop)};
+    }
+} 
+
+function subPaiString(hs, num, needid) {
+    if(needid === null) needid = true;
+    var p = subCalPosition(0, num, hs);
+    var id = hs <= 2? (hs * 10 + num + 1): (num <= 3? (30 + num * 2 + 1): (32 + num * 2 + 1));
+    return '<img '+ (needid===true?('id="subpai_'+id+'"'):'')+' style="background-color:red; position:absolute; width:24; height: 32; left: '+p.x+'; top: '+p.y+'"><img>';
+}
+
+function subPaiStringType(id) {
+    var hs, num;
+    if(id < 10) { hs = 0; num = id - 1; }
+    else if(id < 20) { hs = 1; num = id - 10 - 1; }
+    else if(id < 30) { hs = 2; num = id - 20 - 1; }
+    else if(id <= 37) { hs = 3; num = (id - 31) / 2; }
+    else if(id <= 45) {hs = 3; num = (id - 41) / 2 + 4; }
+    return subPaiString(hs, num, false)
+}
+
+function subPaiString2(head, num) {
+    if(head === true) head = 1;
+    if(head === false) head = 2;
+    var p = subCalPosition(head, num);
+    return '<img style="background-color:white; position:absolute; width:24; height: 32; left: '+p.x+'; top: '+p.y+'"><img>'
+}
+
+function subGetId(pai) {
+    var idstr = pai.attr("id");
+    if(idstr === null || idstr === "") return null;
+    return parseInt(idstr.substring(7));
+}
+
+function countArr(arr1, arr2, element) {
+    var cnt = 0;
+    for(var i = 0; i < arr1.length; i++)
+        if(arr1[i] === element) cnt++;
+    for(var i = 0; i < arr2.length; i++)
+        if(arr2[i] === element) cnt++;
+    return cnt;
+}
+
+/* global */
+var cheatData = null;
+
+var subhead = [], sublast = [], subtable = new Array(45);
+for(var i = 0; i < subtable.length; i++)
+    subtable[i] = 4;
+
+function subLeftClick(pai) {
+    console.log("left/head: " + subGetId(pai));
+    var id = subGetId(pai);
+    if(subhead.length < 18 && countArr(subhead, sublast, id) < 4) {
+        var newpai = $(subPaiStringType(id));
+        $("#subframeBodyId").append(newpai);
+        newpai.attr("name", "head_subname_" + subhead.length);
+        var pos = subCalPosition(1, subhead.length);
+        newpai.animate({top: pos.y, left: pos.x}, 700);
+        subhead.push(id);
+        newpai.hover(function() {
+            $(this).css("cursor","pointer");
+        }, function() {
+            $(this).css("cursor","default");
+        });
+        newpai.click(function() {
+            $(this).fadeOut(300, function() {
+                var p = parseInt($(this).attr("name").substring("head_subname_".length));
+                console.log("p = " + p);
+                $(this).remove();
+                for(var k = p + 1; k < subhead.length; k++) {
+                    var paiNext = $("img[name=head_subname_" + k + "]");
+                    var newpos = subCalPosition(1, k - 1);
+                    paiNext.animate({left: newpos.x, top: newpos.y}, 300);
+                    paiNext.attr("name", "head_subname_" + (k - 1));
+                }
+                subhead.splice(p, 1);
+            });
+        });
+    }
+    console.log(subhead);
+    console.log(sublast);
+}
+
+function subRightClick(pai) {
+    console.log("right/last: " + subGetId(pai));
+    var id = subGetId(pai);
+    if(sublast.length < 18 && countArr(subhead, sublast, id) < 4) {
+        var newpai = $(subPaiStringType(id));
+        $("#subframeBodyId").append(newpai);
+        newpai.attr("name", "last_subname_" + sublast.length);
+        var pos = subCalPosition(2, sublast.length);
+        newpai.animate({top: pos.y, left: pos.x}, 700);
+        sublast.push(id);
+        newpai.hover(function() {
+            $(this).css("cursor","pointer");
+        }, function() {
+            $(this).css("cursor","default");
+        });
+        newpai.click(function() {
+            $(this).fadeOut(300, function() {
+                var p = parseInt($(this).attr("name").substring("last_subname_".length));
+                console.log("p = " + p);
+                $(this).remove();
+                for(var k = p + 1; k < sublast.length; k++) {
+                    var paiNext = $("img[name=last_subname_" + k + "]");
+                    var newpos = subCalPosition(2, k - 1);
+                    paiNext.animate({left: newpos.x, top: newpos.y}, 300);
+                    paiNext.attr("name", "last_subname_" + (k - 1));
+                }
+                sublast.splice(p, 1);
+            });
+        });
+    }
+    console.log(subhead);
+    console.log(sublast);
+}
+
+$("#subframeBodyId").bind("contextmenu",function(e){
+    return false;
+});
+$("#subBtnOkId").click(function() {
+    cheatData = {head: subhead, last: sublast};
+});
+for(var hs = 0; hs < 4; hs++) {
+    for(var num = 0; num < ((hs !== 3)? 9: 7); num++) {
+        var pai = $(subPaiString(hs, num, true));
+        $("#subframeBodyId").append(pai);
+        
+        pai.hover(function() {
+            var id = subGetId($(this));
+            if(countArr(subhead, sublast, id) < 4) 
+                $(this).css("cursor","pointer");
+            else $(this).css("cursor","not-allowed");
+        }, function() {
+            $(this).css("cursor","default");
+        });
+        pai.mousedown(function(event){
+            if(event.which == 1){
+                subLeftClick($(this));
+            }
+            if(event.which == 3){
+                subRightClick($(this));
+            }
+        });
+    }
+}
+for(var i = 1; i <= 2; i++)
+    for(var j = 0; j < 18; j++)
+        $("#subframeBodyId").append(subPaiString2(i, j));
+
+
+</script>
+
+</html>

@@ -10,7 +10,9 @@ function Game() {
     this.tenpais = [];   /* tenpais if drop the index */
     this.buttons = {riich: false, kan: false, tsumo: false};
     
-    this.round = 0, this.riichRound = 0, this.left = 30;
+    this.round = 0, this.riichRound = -1, this.left = 30;
+    this.kyokuSeq = 0, this.playerPosition = 0, this.point = 25000, this.riichBar = 0;
+    this.rinshanFlag = false;
     
     this.outputMembers = function() {
         console.log("----------------------");
@@ -75,8 +77,8 @@ function Game() {
         }
         this.left -= 13;
         var oldHandPais = this.handPais.slice(0);
-        this.handPais.sort(basicSort);
-        return oldHandPais;
+        var seqMap = mysort(this.handPais);
+        return {oldHandPais: oldHandPais, seqMap: seqMap};
     }
     
     this.moPai = function() {
@@ -96,24 +98,34 @@ function Game() {
     
     this.uchi = function(index) {
         
+        this.handPais.splice(index, 1);
+        var seqMap = mysort(this.handPais);
+        this.round++;
+        // ryuukyoku judgement
+        
+        return {
+            tenpai: tenpai(this.handPais, this.kans),
+            seqMap: seqMap,
+            ryuukyoku: this.left === 0
+        };
     }
     
-    this.riichClick() {
+    this.riichClick = function() {
+        this.ables = keySet(dropTenpai);
+    }
+    
+    this.kanClick = function() {
         
     }
     
-    this.kanClick() {
-        
-    }
-    
-    this.tsumoClick() {
+    this.tsumoClick = function() {
         
     }
     
     /* private method */
     this.buttonRiichCheck = function() {
         var m = dropTenpai(this.handPais, this.kans);
-        return m.size !== 0;
+        return m.size !== 0 && this.point >= 1000;
     }
     
     /* private method */
@@ -136,8 +148,11 @@ function Game() {
 
 var game = new Game();
 game.initPaisCheated([6,6,6,6,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5], []);
-game.start();
+console.log(game.start());
 game.outputMembers();
 game.moPai();
 game.outputMembers();
+console.log(game.uchi(1));
+game.outputMembers();
+
 

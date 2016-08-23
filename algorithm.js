@@ -822,5 +822,43 @@ function canKan(pais, kans, get) {
     return ten1.toString() === ten2.toString();
 }
 
+/* sort algorithm, return a map index -> arr[index] (oldindex -> newindex) */
+function mysort(arr) {
+    var len = arr.length;
+    var seqArr = seqArray(len);
+    for(var i = 0; i < len - 1; i++) {
+        var min = i + 1;
+        for(var j = i + 1; j < len; j++) {
+            if(arr[j] < arr[min]) min = j;
+        }
+        if(arr[min] < arr[i]) {
+            var tp = arr[min];
+            arr[min] = arr[i];
+            arr[i] = tp;
+            tp = seqArr[min];
+            seqArr[min] = seqArr[i];
+            seqArr[i] = tp;
+        }
+    }
+    var seqArr2 = new Array(len);
+    for(var i = 0; i < len; i++) {
+        var find = -1;
+        for(var j = 0; j < len; j++)
+            if(seqArr[j] === i) {find = j; break; }
+        seqArr2[i] = find;
+    }
+    return seqArr2;
+}
+
+/**/
+function keySet(map) {
+    var keys = [];
+    map.forEach(function(value, key) {
+        keys.push(key);
+    });
+    keys.sort(basicSort);
+    return keys;
+}
+
 /* global variables */
 var paiType = [1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29,31,33,35,37,41,43,45];
